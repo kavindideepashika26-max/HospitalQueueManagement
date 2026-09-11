@@ -1,0 +1,120 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: hms-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+  doctor-service:
+    build: ./doctor-service/doctor
+    image: doctor
+    container_name: doctor-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/doctor_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
+
+  patient-service:
+    build: ./patient-service/patient
+    image: patient
+    container_name: patient-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/patient_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
+
+  appointment-service:
+    build: ./appointment-service/appointment
+    image: appointment
+    container_name: appointment-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/appointment_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
+
+  queue-service:
+    build: ./queue-service/queue
+    image: queue
+    container_name: queue-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/queue_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
+
+  report-service:
+    build: ./report-service/report
+    image: report
+    container_name: report-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/report_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
+  auth-service:
+    build: ./auth-service/auth
+    image: auth
+    container_name: auth-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8087:8087"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/auth_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
+
+  api-gateway:
+    build: ./api-gateway/api-gateway
+    image: api-gateway
+    container_name: api-gateway
+    depends_on:
+      - doctor-service
+      - patient-service
+      - appointment-service
+      - queue-service
+      - report-service
+    ports:
+      - "8080:8080"

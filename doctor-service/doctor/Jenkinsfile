@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+
+    tools {
+        jdk 'jdk25'
+        maven 'Maven'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/kavindideepashika26-max/Doctor.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('doctor-api') {
+                    bat 'mvn clean package -DskipTests'
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                dir('queue-api') {
+                    bat 'docker build -t doctor-api .'
+                }
+            }
+        }
+    }
+}
