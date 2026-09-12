@@ -1,3 +1,4 @@
+
 services:
 
   mysql:
@@ -16,7 +17,6 @@ services:
       timeout: 5s
       retries: 10
 
-
   doctor-service:
     build: ./doctor-service/doctor
     image: doctor
@@ -30,7 +30,6 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/doctor_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
-
 
   patient-service:
     build: ./patient-service/patient
@@ -46,7 +45,6 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
 
-
   appointment-service:
     build: ./appointment-service/appointment
     image: appointment
@@ -61,7 +59,6 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
 
-
   queue-service:
     build: ./queue-service/queue
     image: queue
@@ -75,7 +72,6 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/queue_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
-
 
   report-service:
     build: ./report-service/report
@@ -92,7 +88,9 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
 
   auth-service:
-    build: ./auth-service/auth
+    build:
+      context: ./auth-service/auth
+      dockerfile: dockerfile
     image: auth
     container_name: auth-service
     depends_on:
@@ -105,7 +103,6 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
 
-
   api-gateway:
     build: ./api-gateway/api-gateway
     image: api-gateway
@@ -116,5 +113,7 @@ services:
       - appointment-service
       - queue-service
       - report-service
+      - auth-service
     ports:
       - "8080:8080"
+
